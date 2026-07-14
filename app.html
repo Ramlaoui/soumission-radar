@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Atelier — Soumission Radar</title>
+    <meta name="description" content="Lisez un DAO, reliez chaque exigence à une pièce et repartez avec un registre de conformité traçable." />
+    <meta name="robots" content="noindex" />
+    <link rel="stylesheet" href="./assets/app.css" />
+  </head>
+  <body class="min-h-screen bg-[#f4f3ef] text-slate-950 antialiased selection:bg-lime-300">
+    <header class="border-b border-slate-900/10 bg-[#f4f3ef]/95 backdrop-blur">
+      <nav class="mx-auto flex max-w-[1500px] items-center justify-between px-4 py-3 sm:px-6" aria-label="Navigation de l'atelier">
+        <a href="./" class="flex items-center gap-3 font-black tracking-tight">
+          <span class="grid size-9 place-items-center rounded-xl bg-slate-950 text-sm text-lime-300">SR</span>
+          <span>Soumission Radar</span>
+          <span class="hidden rounded-full border border-slate-900/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.16em] text-slate-500 sm:inline">Atelier</span>
+        </a>
+        <div class="flex items-center gap-2 text-xs font-semibold">
+          <span id="modeBadge" class="rounded-full border border-emerald-700/15 bg-emerald-700/10 px-3 py-1.5 text-emerald-800">Local · fichiers privés</span>
+          <a href="./confidentialite.html" class="hidden rounded-full px-3 py-1.5 text-slate-500 hover:bg-white sm:block">Confidentialité</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:py-9">
+      <section id="caseSetup" class="mx-auto max-w-6xl">
+        <div class="grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
+          <div class="lg:sticky lg:top-8">
+            <p class="text-xs font-black uppercase tracking-[.22em] text-emerald-700">Nouveau dossier</p>
+            <h1 class="mt-4 text-4xl font-black leading-[.98] tracking-[-.05em] sm:text-6xl">Du DAO au dossier final, sans perdre la preuve.</h1>
+            <p class="mt-6 max-w-xl text-base leading-7 text-slate-600">L'atelier lit le cahier des charges, construit le registre des exigences, cherche les pièces correspondantes et répond uniquement avec des citations vérifiables.</p>
+            <ol class="mt-8 space-y-3 text-sm">
+              <li class="flex gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5"><span class="grid size-7 shrink-0 place-items-center rounded-full bg-slate-950 text-xs font-black text-lime-300">1</span><span><strong class="block">Ajoutez le DAO</strong><span class="text-slate-500">PDF texte, DOCX ou fichier texte.</span></span></li>
+              <li class="flex gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5"><span class="grid size-7 shrink-0 place-items-center rounded-full bg-slate-950 text-xs font-black text-lime-300">2</span><span><strong class="block">Ajoutez les pièces de l'entreprise</strong><span class="text-slate-500">Administratif, références, technique, financier.</span></span></li>
+              <li class="flex gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5"><span class="grid size-7 shrink-0 place-items-center rounded-full bg-slate-950 text-xs font-black text-lime-300">3</span><span><strong class="block">Travaillez avec le copilote</strong><span class="text-slate-500">Questions, priorités, registre et ZIP final.</span></span></li>
+            </ol>
+          </div>
+
+          <form id="caseForm" class="rounded-[2rem] bg-slate-950 p-5 text-white shadow-2xl shadow-slate-900/15 sm:p-8">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div><p class="text-sm font-bold text-lime-300">Créer l'espace de travail</p><h2 class="mt-1 text-2xl font-black tracking-tight">Votre appel d'offres</h2></div>
+              <button id="demoButton" type="button" class="rounded-full border border-white/15 px-4 py-2 text-xs font-bold hover:bg-white/10">Essayer l'exemple</button>
+            </div>
+
+            <div class="mt-7 grid gap-4 sm:grid-cols-2">
+              <label class="text-sm font-semibold sm:col-span-2">Objet du marché
+                <input id="caseTitle" maxlength="200" class="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-slate-600 focus:border-lime-300" placeholder="Ex. Maintenance du réseau informatique" />
+              </label>
+              <label class="text-sm font-semibold">Acheteur <span class="font-normal text-slate-500">(facultatif)</span>
+                <input id="caseBuyer" maxlength="200" class="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-slate-600 focus:border-lime-300" placeholder="Autorité contractante" />
+              </label>
+              <label id="accessCodeField" class="hidden text-sm font-semibold">Code d'invitation
+                <input id="accessCode" type="password" autocomplete="off" class="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:border-lime-300" />
+              </label>
+            </div>
+
+            <div class="mt-6 grid gap-4 sm:grid-cols-2">
+              <label class="group cursor-pointer rounded-2xl border-2 border-dashed border-lime-300/30 bg-lime-300/[.04] p-5 transition hover:border-lime-300">
+                <span class="text-xs font-black uppercase tracking-[.16em] text-lime-300">Document maître</span>
+                <span class="mt-2 block text-lg font-black">Déposer le DAO</span>
+                <span class="mt-1 block text-xs leading-5 text-slate-400">Un PDF, DOCX, TXT ou MD · 20 Mo max</span>
+                <input id="daoFile" type="file" accept=".pdf,.docx,.txt,.md" class="sr-only" />
+                <span id="daoFileName" class="mt-4 block truncate rounded-lg bg-white/5 px-3 py-2 text-xs text-slate-400">Aucun DAO sélectionné</span>
+              </label>
+              <label class="group cursor-pointer rounded-2xl border-2 border-dashed border-white/15 p-5 transition hover:border-white/40">
+                <span class="text-xs font-black uppercase tracking-[.16em] text-slate-400">Dossier entreprise</span>
+                <span class="mt-2 block text-lg font-black">Ajouter les pièces</span>
+                <span class="mt-1 block text-xs leading-5 text-slate-400">Jusqu'à 30 fichiers · PDF, DOCX, texte, images</span>
+                <input id="companyFiles" type="file" accept=".pdf,.docx,.txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp" multiple class="sr-only" />
+                <span id="companyFileSummary" class="mt-4 block truncate rounded-lg bg-white/5 px-3 py-2 text-xs text-slate-400">Aucune pièce sélectionnée</span>
+              </label>
+            </div>
+
+            <div id="setupError" class="mt-5 hidden rounded-xl border border-rose-300/20 bg-rose-300/10 p-3 text-sm text-rose-100" role="alert"></div>
+            <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p id="privacyNote" class="max-w-sm text-xs leading-5 text-slate-500">Mode local : les fichiers restent dans ce navigateur et disparaissent à la fermeture.</p>
+              <button id="analyzeCase" type="submit" class="rounded-xl bg-lime-300 px-6 py-3.5 font-black text-slate-950 transition hover:bg-lime-200 disabled:cursor-wait disabled:opacity-60">Construire le registre →</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section id="analysisWorkspace" class="hidden">
+        <div class="mb-5 flex flex-col gap-4 rounded-2xl bg-slate-950 p-5 text-white sm:flex-row sm:items-center sm:justify-between">
+          <div class="min-w-0"><p class="text-xs font-bold uppercase tracking-[.18em] text-lime-300">Dossier actif</p><h1 id="workspaceTitle" class="mt-1 truncate text-2xl font-black tracking-tight"></h1><p id="workspaceBuyer" class="mt-1 text-sm text-slate-400"></p></div>
+          <div class="flex flex-wrap gap-2">
+            <button id="newCaseButton" type="button" class="rounded-lg border border-white/15 px-4 py-2 text-sm font-bold hover:bg-white/10">Nouveau</button>
+            <button id="deleteCaseButton" type="button" class="rounded-lg border border-white/15 px-4 py-2 text-sm font-bold hover:bg-white/10">Effacer</button>
+            <button id="downloadFinal" type="button" class="rounded-lg bg-lime-300 px-4 py-2 text-sm font-black text-slate-950 hover:bg-lime-200">Télécharger le dossier final</button>
+          </div>
+        </div>
+
+        <div class="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_23rem]">
+          <div class="min-w-0 space-y-5">
+            <section class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-900/5">
+              <div class="grid gap-5 p-5 sm:grid-cols-[1fr_auto] sm:items-center sm:p-7">
+                <div><div class="flex flex-wrap items-center gap-3"><span id="statusBadge" class="rounded-full px-3 py-1 text-xs font-black uppercase tracking-[.12em]"></span><span id="modelMode" class="text-xs font-semibold text-slate-400"></span></div><h2 id="statusTitle" class="mt-3 text-3xl font-black tracking-[-.035em]"></h2><p id="statusCopy" class="mt-2 max-w-3xl text-sm leading-6 text-slate-600"></p></div>
+                <div class="min-w-36 rounded-2xl bg-slate-950 p-4 text-white"><div class="flex items-end justify-between"><strong id="coveragePercent" class="text-3xl font-black text-lime-300"></strong><span id="coverageRatio" class="pb-1 text-xs text-slate-400"></span></div><progress id="coverageProgress" max="100" value="0" class="mt-3 h-2 w-full accent-lime-300"></progress><p class="mt-2 text-[10px] font-bold uppercase tracking-[.14em] text-slate-500">couverture des pièces</p></div>
+              </div>
+              <div id="warningBanner" class="hidden border-t border-amber-900/10 bg-amber-50 px-5 py-3 text-sm text-amber-900 sm:px-7"></div>
+              <div id="securityBanner" class="hidden border-t border-rose-900/10 bg-rose-50 px-5 py-3 text-sm text-rose-900 sm:px-7"></div>
+            </section>
+
+            <section class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Faits clés du DAO">
+              <article class="rounded-2xl bg-white p-4 ring-1 ring-slate-900/5"><p class="text-[10px] font-black uppercase tracking-[.16em] text-slate-400">Date limite</p><p id="factDeadline" class="mt-2 text-sm font-black"></p><p id="factDeadlinePage" class="mt-1 text-xs text-emerald-700"></p></article>
+              <article class="rounded-2xl bg-white p-4 ring-1 ring-slate-900/5"><p class="text-[10px] font-black uppercase tracking-[.16em] text-slate-400">Garantie</p><p id="factSecurity" class="mt-2 text-sm font-black"></p><p id="factSecurityPage" class="mt-1 text-xs text-emerald-700"></p></article>
+              <article class="rounded-2xl bg-white p-4 ring-1 ring-slate-900/5"><p class="text-[10px] font-black uppercase tracking-[.16em] text-slate-400">Validité</p><p id="factValidity" class="mt-2 text-sm font-black"></p><p id="factValidityPage" class="mt-1 text-xs text-emerald-700"></p></article>
+              <article class="rounded-2xl bg-white p-4 ring-1 ring-slate-900/5"><p class="text-[10px] font-black uppercase tracking-[.16em] text-slate-400">Dépôt</p><p id="factSubmission" class="mt-2 text-sm font-black"></p><p id="factSubmissionPage" class="mt-1 text-xs text-emerald-700"></p></article>
+            </section>
+
+            <section class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-900/5 sm:p-7">
+              <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><p class="text-xs font-black uppercase tracking-[.2em] text-emerald-700">Registre vivant</p><h2 class="mt-2 text-2xl font-black tracking-tight">Exigence → preuve → pièce → action</h2></div><p id="ledgerCount" class="text-xs font-semibold text-slate-400"></p></div>
+              <div id="ledgerRows" class="mt-6 space-y-3"></div>
+            </section>
+
+            <section id="aiReviewSection" class="hidden rounded-3xl bg-[#e8f0ff] p-5 ring-1 ring-blue-900/10 sm:p-7">
+              <p class="text-xs font-black uppercase tracking-[.2em] text-blue-700">Seconde lecture du modèle</p>
+              <p id="aiReviewSummary" class="mt-3 text-sm leading-6 text-slate-700"></p>
+              <div id="aiReviewRisks" class="mt-5 space-y-3"></div>
+            </section>
+          </div>
+
+          <aside class="min-w-0 xl:sticky xl:top-5 xl:h-[calc(100vh-2.5rem)]">
+            <section class="flex h-[42rem] max-h-[calc(100vh-2.5rem)] flex-col overflow-hidden rounded-3xl bg-slate-950 text-white shadow-xl">
+              <div class="border-b border-white/10 p-5"><div class="flex items-center gap-3"><span class="grid size-9 place-items-center rounded-xl bg-lime-300 font-black text-slate-950">↗</span><div><h2 class="font-black">Copilote du dossier</h2><p class="text-xs text-slate-400">Réponses ancrées dans vos fichiers</p></div></div></div>
+              <div id="chatMessages" class="flex-1 space-y-4 overflow-y-auto p-4" aria-live="polite"></div>
+              <div class="border-t border-white/10 p-4">
+                <div id="quickQuestions" class="mb-3 flex gap-2 overflow-x-auto pb-1"><button type="button" data-question="Qu'est-ce qui manque ?" class="shrink-0 rounded-full bg-white/5 px-3 py-1.5 text-[11px] font-bold text-slate-300 hover:bg-white/10">Ce qui manque</button><button type="button" data-question="Quelle est la prochaine action ?" class="shrink-0 rounded-full bg-white/5 px-3 py-1.5 text-[11px] font-bold text-slate-300 hover:bg-white/10">Prochaine action</button><button type="button" data-question="Quelle est la date limite ?" class="shrink-0 rounded-full bg-white/5 px-3 py-1.5 text-[11px] font-bold text-slate-300 hover:bg-white/10">Date limite</button></div>
+                <form id="chatForm" class="flex items-end gap-2"><label class="sr-only" for="chatInput">Votre question</label><textarea id="chatInput" rows="2" maxlength="4000" class="min-h-12 flex-1 resize-none rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-lime-300" placeholder="Demandez une vérification…"></textarea><button id="sendMessage" type="submit" class="grid size-12 shrink-0 place-items-center rounded-xl bg-lime-300 font-black text-slate-950 hover:bg-lime-200" aria-label="Envoyer">↑</button></form>
+                <p class="mt-2 text-[10px] leading-4 text-slate-600">Le copilote ne dépose rien et ne garantit jamais la recevabilité.</p>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script src="./vendor/jszip.min.js"></script>
+    <script src="./vendor/mammoth.browser.min.js"></script>
+    <script src="./lib/dao_analyzer.js"></script>
+    <script src="./lib/document_classifier.js"></script>
+    <script src="./lib/ledger_builder.js"></script>
+    <script src="./config.js"></script>
+    <script type="module" src="./copilot.js"></script>
+  </body>
+</html>
