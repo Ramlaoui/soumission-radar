@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="fr" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Soumission Radar — contrôlez votre dossier d'appel d'offres</title>
+    <meta name="description" content="Classez vos pièces de soumission, détectez les documents manquants et téléchargez un ZIP prêt pour la revue finale. Traitement local, sans envoi de fichiers." />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://ramlaoui.github.io/soumission-radar/" />
+    <meta property="og:title" content="Soumission Radar — dossier de soumission contrôlé" />
+    <meta property="og:description" content="Un contrôle local et confidentiel pour repérer les pièces manquantes avant le dépôt." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://ramlaoui.github.io/soumission-radar/" />
+    <link rel="stylesheet" href="./assets/app.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Soumission Radar",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "description": "Contrôle local de préparation des dossiers de soumission pour PME.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "XOF" }
+      }
+    </script>
+  </head>
+  <body class="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-emerald-300 selection:text-slate-950">
+    <div class="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[42rem] bg-[radial-gradient(circle_at_20%_10%,rgba(16,185,129,0.18),transparent_34%),radial-gradient(circle_at_80%_0%,rgba(14,165,233,0.12),transparent_30%)]"></div>
+
+    <header class="sticky top-0 z-40 border-b border-white/10 bg-slate-950/85 backdrop-blur-xl">
+      <nav class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8" aria-label="Navigation principale">
+        <a href="#top" class="flex items-center gap-3 font-semibold tracking-tight">
+          <span class="grid size-9 place-items-center rounded-xl bg-emerald-400 text-lg font-black text-slate-950">SR</span>
+          <span>Soumission Radar</span>
+        </a>
+        <div class="hidden items-center gap-7 text-sm text-slate-300 md:flex">
+          <a class="hover:text-white" href="#outil">Outil gratuit</a>
+          <a class="hover:text-white" href="#offres">Audit pilote</a>
+          <a class="hover:text-white" href="#faq">Questions</a>
+        </div>
+        <a data-contact-link class="rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300" href="mailto:ramlaouiali@gmail.com">Demander un audit</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="mx-auto grid max-w-7xl gap-12 px-5 pb-20 pt-16 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-8 lg:pb-28 lg:pt-24">
+        <div>
+          <p class="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-300/25 bg-emerald-300/10 px-3 py-1 text-sm font-medium text-emerald-200">
+            <span class="size-2 rounded-full bg-emerald-300"></span>
+            Pilote ouvert aux PME et consultants au Sénégal
+          </p>
+          <h1 class="max-w-3xl text-4xl font-black leading-tight tracking-[-0.04em] text-white sm:text-6xl lg:text-7xl">
+            Repérez la pièce manquante <span class="text-emerald-300">avant</span> le dépôt.
+          </h1>
+          <p class="mt-7 max-w-2xl text-lg leading-8 text-slate-300">
+            Ajoutez vos documents, choisissez les exigences du DAO et obtenez un dossier classé, une checklist et un contrôle qualité. Vos fichiers restent dans votre navigateur.
+          </p>
+          <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+            <a href="#outil" class="rounded-xl bg-emerald-400 px-6 py-3.5 text-center font-bold text-slate-950 transition hover:bg-emerald-300">Contrôler un dossier gratuitement</a>
+            <a href="#fonctionnement" class="rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 text-center font-semibold text-white transition hover:bg-white/10">Voir comment ça marche</a>
+          </div>
+          <dl class="mt-10 grid max-w-2xl grid-cols-3 gap-4 border-t border-white/10 pt-6 text-sm">
+            <div><dt class="text-slate-400">Envoi serveur</dt><dd class="mt-1 font-bold text-white">Aucun</dd></div>
+            <div><dt class="text-slate-400">Résultat</dt><dd class="mt-1 font-bold text-white">ZIP + checklist</dd></div>
+            <div><dt class="text-slate-400">Coût de l'outil</dt><dd class="mt-1 font-bold text-white">Gratuit</dd></div>
+          </dl>
+        </div>
+
+        <div class="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900 shadow-2xl shadow-emerald-950/30">
+          <img class="h-44 w-full object-cover opacity-80" src="./assets/procurement-radar-hero.png" alt="Bureau préparant un dossier de soumission" />
+          <div class="space-y-4 p-6 sm:p-8">
+            <div class="flex items-start justify-between gap-5">
+              <div><p class="text-sm text-slate-400">Contrôle simulé</p><h2 class="mt-1 text-xl font-bold">Maintenance réseau — Dakar</h2></div>
+              <span class="rounded-full bg-rose-400/15 px-3 py-1 text-xs font-bold text-rose-200">NON PRÊT</span>
+            </div>
+            <div class="rounded-2xl border border-rose-300/15 bg-rose-300/5 p-4">
+              <p class="text-sm font-semibold text-rose-100">1 blocage détecté</p>
+              <p class="mt-1 text-sm text-slate-300">Référence similaire 4 absente du dossier.</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div class="rounded-xl bg-white/5 p-4"><span class="text-slate-400">Classées</span><strong class="mt-1 block text-2xl">7</strong></div>
+              <div class="rounded-xl bg-white/5 p-4"><span class="text-slate-400">À relire</span><strong class="mt-1 block text-2xl">2</strong></div>
+            </div>
+            <p class="text-xs leading-5 text-slate-500">Le contrôle aide à préparer la revue finale. Il ne remplace pas le DAO ni l'avis d'un spécialiste.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="outil" class="border-y border-white/10 bg-white/[0.025] py-20">
+        <div class="mx-auto max-w-7xl px-5 lg:px-8">
+          <div class="max-w-3xl">
+            <p class="text-sm font-bold uppercase tracking-[0.2em] text-emerald-300">Outil local gratuit</p>
+            <h2 class="mt-3 text-3xl font-black tracking-tight text-white sm:text-5xl">Construisez votre dossier de revue.</h2>
+            <p class="mt-4 text-slate-300">Commencez avec les noms de fichiers et le texte des fichiers TXT, CSV, MD ou JSON. Les PDF et images sont classés d'après leur nom; une revue humaine reste indispensable.</p>
+          </div>
+
+          <div class="mt-10 grid gap-6 xl:grid-cols-[.85fr_1.15fr]">
+            <form id="auditForm" class="space-y-6 rounded-3xl border border-white/10 bg-slate-900 p-5 sm:p-7">
+              <div class="grid gap-4 sm:grid-cols-2">
+                <label class="text-sm font-medium text-slate-200 sm:col-span-2">Objet du marché
+                  <input id="tenderTitle" class="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none ring-emerald-300 transition focus:ring-2" value="Maintenance réseau et support utilisateur" required />
+                </label>
+                <label class="text-sm font-medium text-slate-200">Acheteur
+                  <input id="buyer" class="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none ring-emerald-300 transition focus:ring-2" placeholder="Administration / entreprise" />
+                </label>
+                <label class="text-sm font-medium text-slate-200">Date limite
+                  <input id="deadline" type="date" class="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none ring-emerald-300 transition focus:ring-2" />
+                </label>
+              </div>
+
+              <fieldset>
+                <legend class="text-sm font-semibold text-white">Pièces exigées par le DAO</legend>
+                <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                  <label class="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5 text-sm"><input name="requirement" value="ninea" type="checkbox" checked class="size-4 accent-emerald-400" /> NINEA/RCCM</label>
+                  <label class="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5 text-sm"><input name="requirement" value="quitus" type="checkbox" checked class="size-4 accent-emerald-400" /> Quitus fiscal/social</label>
+                  <label class="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5 text-sm"><input name="requirement" value="bank" type="checkbox" checked class="size-4 accent-emerald-400" /> Garantie bancaire</label>
+                  <label class="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5 text-sm"><input name="requirement" value="technical" type="checkbox" checked class="size-4 accent-emerald-400" /> Mémoire technique</label>
+                  <label class="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5 text-sm"><input name="requirement" value="financial" type="checkbox" checked class="size-4 accent-emerald-400" /> Offre financière</label>
+                  <label class="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5 text-sm">Références requises <input id="requiredReferences" type="number" min="0" max="20" value="4" class="ml-auto w-16 rounded-lg border border-white/10 bg-slate-950 px-2 py-1.5 text-center" /></label>
+                </div>
+              </fieldset>
+
+              <div id="dropZone" class="rounded-2xl border-2 border-dashed border-white/15 bg-slate-950/70 p-7 text-center transition hover:border-emerald-300/60">
+                <input id="documentFiles" type="file" multiple class="sr-only" />
+                <p class="font-semibold text-white">Déposez les pièces ici</p>
+                <p class="mt-1 text-sm text-slate-400">ou sélectionnez jusqu'à 50 fichiers</p>
+                <button id="chooseFiles" type="button" class="mt-4 rounded-lg border border-white/15 px-4 py-2 text-sm font-semibold hover:bg-white/5">Choisir les fichiers</button>
+              </div>
+              <p id="fileSummary" class="text-sm text-slate-400">Aucun fichier sélectionné.</p>
+
+              <div class="flex flex-col gap-3 sm:flex-row">
+                <button id="analyzeButton" type="submit" class="flex-1 rounded-xl bg-emerald-400 px-5 py-3 font-bold text-slate-950 transition hover:bg-emerald-300">Analyser le dossier</button>
+                <button id="demoButton" type="button" class="rounded-xl border border-white/15 px-5 py-3 font-semibold transition hover:bg-white/5">Charger un exemple</button>
+              </div>
+              <p id="formError" class="hidden rounded-xl bg-rose-400/10 p-3 text-sm text-rose-200" role="alert"></p>
+            </form>
+
+            <section id="results" class="rounded-3xl border border-white/10 bg-slate-900 p-5 sm:p-7" aria-live="polite">
+              <div id="emptyResults" class="grid min-h-[32rem] place-items-center text-center">
+                <div><div class="mx-auto grid size-16 place-items-center rounded-2xl bg-white/5 text-2xl">✓</div><h3 class="mt-5 text-xl font-bold">Votre contrôle apparaîtra ici</h3><p class="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-400">Aucun fichier n'est transmis. L'analyse et le ZIP sont produits sur cet appareil.</p></div>
+              </div>
+              <div id="auditResults" class="hidden space-y-6">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                  <div><p class="text-sm text-slate-400">État du dossier</p><h3 id="statusTitle" class="mt-1 text-2xl font-black"></h3></div>
+                  <span id="statusBadge" class="rounded-full px-3 py-1 text-xs font-bold"></span>
+                </div>
+                <p id="statusDescription" class="rounded-2xl border p-4 text-sm leading-6"></p>
+                <div class="grid grid-cols-3 gap-3 text-center"><div class="rounded-xl bg-white/5 p-3"><strong id="mappedCount" class="block text-2xl"></strong><span class="text-xs text-slate-400">classées</span></div><div class="rounded-xl bg-white/5 p-3"><strong id="missingCount" class="block text-2xl"></strong><span class="text-xs text-slate-400">manquantes</span></div><div class="rounded-xl bg-white/5 p-3"><strong id="warningCount" class="block text-2xl"></strong><span class="text-xs text-slate-400">alertes</span></div></div>
+                <div><h4 class="font-bold text-white">Pièces classées</h4><ul id="mappedList" class="mt-3 space-y-2 text-sm"></ul></div>
+                <div><h4 class="font-bold text-white">Blocages et alertes</h4><ul id="issueList" class="mt-3 space-y-2 text-sm"></ul></div>
+                <div><h4 class="font-bold text-white">Non classées</h4><ul id="unclassifiedList" class="mt-3 space-y-2 text-sm text-slate-400"></ul></div>
+                <button id="downloadZip" type="button" class="w-full rounded-xl bg-emerald-400 px-5 py-3 font-bold text-slate-950 transition hover:bg-emerald-300">Télécharger le dossier ZIP</button>
+                <p class="text-xs leading-5 text-slate-500">Le statut signifie « prêt pour revue », jamais « recevable garanti ». Comparez toujours le résultat au DAO original.</p>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section id="fonctionnement" class="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+        <div class="grid gap-6 md:grid-cols-3">
+          <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6"><span class="text-sm font-black text-emerald-300">01</span><h3 class="mt-4 text-xl font-bold">Définissez les exigences</h3><p class="mt-2 text-sm leading-6 text-slate-400">Cochez seulement les pièces demandées dans le DAO et indiquez le nombre de références.</p></article>
+          <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6"><span class="text-sm font-black text-emerald-300">02</span><h3 class="mt-4 text-xl font-bold">Contrôlez localement</h3><p class="mt-2 text-sm leading-6 text-slate-400">Les noms et fichiers texte sont analysés dans votre navigateur. Rien n'est envoyé.</p></article>
+          <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6"><span class="text-sm font-black text-emerald-300">03</span><h3 class="mt-4 text-xl font-bold">Relisez le ZIP</h3><p class="mt-2 text-sm leading-6 text-slate-400">Le ZIP contient les pièces rangées, les placeholders manquants, le manifeste et la checklist.</p></article>
+        </div>
+      </section>
+
+      <section id="offres" class="border-y border-white/10 bg-emerald-300 text-slate-950">
+        <div class="mx-auto grid max-w-7xl gap-10 px-5 py-16 lg:grid-cols-[1fr_.8fr] lg:items-center lg:px-8">
+          <div><p class="text-sm font-black uppercase tracking-[0.2em]">Audit pilote</p><h2 class="mt-3 text-3xl font-black tracking-tight sm:text-5xl">Besoin d'une deuxième paire d'yeux ?</h2><p class="mt-5 max-w-2xl text-lg leading-8 text-slate-800">Le pilote payant ajoute une revue humaine du manifeste, des incohérences et des pièces signalées. Vous recevez une liste d'actions priorisée; aucun dépôt n'est effectué à votre place.</p></div>
+          <div class="grid gap-4">
+            <div class="rounded-3xl bg-slate-950 p-7 text-white shadow-2xl"><p class="text-sm text-emerald-300">Revue d'un dossier</p><p class="mt-2 text-4xl font-black">35 000 FCFA</p><p class="mt-1 text-sm text-slate-400">environ 53 € — règlement après acceptation</p><ul class="mt-6 space-y-3 text-sm text-slate-300"><li>✓ Contrôle du ZIP généré</li><li>✓ Liste des blocages et questions</li><li>✓ Retour ciblé sous 24 h ouvrées</li></ul><a data-contact-link href="mailto:ramlaouiali@gmail.com" class="mt-7 block rounded-xl bg-emerald-400 px-5 py-3 text-center font-bold text-slate-950 hover:bg-emerald-300">Candidater au pilote</a></div>
+            <div class="rounded-2xl border border-slate-900/15 bg-white/50 p-5"><div class="flex items-baseline justify-between gap-4"><div><p class="font-black">Bureau consultant</p><p class="mt-1 text-sm text-slate-700">Jusqu'à 6 revues par mois pendant le pilote.</p></div><p class="shrink-0 font-black">149 000 FCFA/mois</p></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" class="mx-auto max-w-4xl px-5 py-20 lg:px-8">
+        <h2 class="text-3xl font-black tracking-tight text-white sm:text-4xl">Questions fréquentes</h2>
+        <div class="mt-8 divide-y divide-white/10 border-y border-white/10">
+          <details class="group py-5"><summary class="cursor-pointer list-none font-semibold">Mes documents sont-ils envoyés sur un serveur ?</summary><p class="mt-3 text-sm leading-6 text-slate-400">Non. Cette version fonctionne entièrement dans le navigateur. Fermer l'onglet efface l'état de la session.</p></details>
+          <details class="group py-5"><summary class="cursor-pointer list-none font-semibold">L'outil lit-il les PDF et les scans ?</summary><p class="mt-3 text-sm leading-6 text-slate-400">Il classe les PDF et images à partir de leur nom. Seuls les petits fichiers texte courants sont lus. Renommez clairement les scans et vérifiez toujours le résultat.</p></details>
+          <details class="group py-5"><summary class="cursor-pointer list-none font-semibold">Un statut vert garantit-il que mon offre sera recevable ?</summary><p class="mt-3 text-sm leading-6 text-slate-400">Non. Il indique seulement que les catégories sélectionnées ont un fichier correspondant sans alerte évidente. Le DAO, les formats, signatures, dates et règles de dépôt prévalent.</p></details>
+          <details class="group py-5"><summary class="cursor-pointer list-none font-semibold">Êtes-vous affilié à l'ARCOP, la DCMP ou un portail officiel ?</summary><p class="mt-3 text-sm leading-6 text-slate-400">Non. Soumission Radar est un outil indépendant de préparation documentaire.</p></details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="border-t border-white/10 py-8">
+      <div class="mx-auto flex max-w-7xl flex-col gap-4 px-5 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8"><p>© 2026 Soumission Radar — outil indépendant.</p><div class="flex gap-5"><a class="hover:text-white" href="./confidentialite.html">Confidentialité</a><a class="hover:text-white" href="./conditions.html">Conditions</a><a data-contact-link class="hover:text-white" href="mailto:ramlaouiali@gmail.com">Contact</a></div></div>
+    </footer>
+
+    <script src="./vendor/jszip.min.js"></script>
+    <script src="./lib/document_classifier.js"></script>
+    <script src="./config.js"></script>
+    <script src="./product.js"></script>
+  </body>
+</html>
