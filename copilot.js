@@ -10,6 +10,25 @@ let selectedDocuments = [];
 let extractedDocuments = [];
 let activeCase = null;
 let caseToken = null;
+let accountMode = false;
+let accountConfig = null;
+let accountSession = null;
+let activeWorkspace = null;
+let activeFeedback = null;
+let vaultDocuments = [];
+let vaultUsage = null;
+const selectedVaultIds = new Set();
+
+const VAULT_CATEGORY_LABELS = {
+  legal: "Juridique",
+  tax_social: "Fiscal & social",
+  bank: "Banque",
+  references: "Références",
+  staff: "Personnel",
+  technical: "Technique",
+  financial: "Financier",
+  other: "Autre"
+};
 
 const element = id => document.getElementById(id);
 
@@ -32,6 +51,17 @@ function slugify(value) {
     .slice(0, 70) || "dossier";
 }
 
+function randomUuid() {
+  if (typeof globalThis.crypto?.randomUUID === "function") return globalThis.crypto.randomUUID();
+  const bytes = new Uint8Array(16);
+  if (typeof globalThis.crypto?.getRandomValues === "function") globalThis.crypto.getRandomValues(bytes);
+  else for (let index = 0; index < bytes.length; index += 1) bytes[index] = Math.floor(Math.random() * 256);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = [...bytes].map(value => value.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 function formatBytes(bytes) {
   if (bytes < 1024 ** 2) return `${Math.max(1, Math.round(bytes / 1024))} Ko`;
   return `${(bytes / 1024 ** 2).toFixed(1)} Mo`;
@@ -44,21 +74,33 @@ function setSetupError(message) {
 
 async function apiRequest(path, options = {}) {
   const headers = new Headers(options.headers || {});
-  if (caseToken) headers.set("x-case-token", caseToken);
-  const response = await fetch(`${apiBaseUrl}${path}`, { ...options, headers });
+  if (!accountMode && caseToken) headers.set("x-case-token", caseToken);
+  const method = String(options.method || "GET").toUpperCase();
+  if (accountMode && !["GET", "HEAD", "OPTIONS"].includes(method) && !path.startsWith("/api/auth/login") && !path.startsWith("/api/auth/register")) {
+    const csrf = document.cookie.split("; ").find(item => item.startsWith("sr_csrf="))?.split("=").slice(1).join("=");
+    if (csrf) headers.set("x-csrf-token", decodeURIComponent(csrf));
+  }
+  const response = await fetch(`${apiBaseUrl}${path}`, { credentials: "same-origin", ...options, headers });
   if (!response.ok) {
     let message = `Erreur ${response.status}`;
-    try { message = (await response.json()).error || message; } catch { /* response is not JSON */ }
-    throw new Error(message);
+    let payload = {};
+    try { payload = await response.json(); message = payload.error || message; } catch { /* response is not JSON */ }
+    const error = new Error(message);
+    error.status = response.status;
+    error.code = payload.code;
+    error.workspaceId = payload.workspaceId;
+    throw error;
   }
   return response;
 }
 
 function updateFileLabels() {
   element("daoFileName").textContent = selectedDao ? `${selectedDao.name} · ${formatBytes(selectedDao.size)}` : "Aucun DAO sélectionné";
-  const total = selectedDocuments.reduce((sum, file) => sum + file.size, 0);
-  element("companyFileSummary").textContent = selectedDocuments.length
-    ? `${selectedDocuments.length} pièce${selectedDocuments.length > 1 ? "s" : ""} · ${formatBytes(total)}`
+  const total = selectedDocuments.reduce((sum, file) => sum + file.size, 0)
+    + vaultDocuments.filter(document => selectedVaultIds.has(document.id)).reduce((sum, document) => sum + document.size, 0);
+  const vaultCount = selectedVaultIds.size;
+  element("companyFileSummary").textContent = selectedDocuments.length || vaultCount
+    ? `${selectedDocuments.length} fichier${selectedDocuments.length > 1 ? "s" : ""}${vaultCount ? ` + ${vaultCount} du coffre` : ""} · ${formatBytes(total)}`
     : "Aucune pièce sélectionnée";
 }
 
@@ -68,7 +110,7 @@ async function createLocalCase(title, buyer) {
   const analysis = analyzer.analyzeDao({ pages: dao.pages });
   const ledger = ledgerBuilder.buildLedger({ dao: analysis, documents: extractedDocuments, title, buyer });
   return {
-    id: `local-${crypto.randomUUID()}`,
+    id: `local-${randomUuid()}`,
     createdAt: ledger.generatedAt,
     updatedAt: ledger.generatedAt,
     expiresAt: null,
@@ -89,22 +131,46 @@ async function createRemoteCase(title, buyer) {
   form.append("buyer", buyer);
   form.append("dao", selectedDao, selectedDao.name);
   for (const file of selectedDocuments) form.append("documents", file, file.name);
+  if (accountMode && selectedVaultIds.size) form.append("vaultDocumentIds", JSON.stringify([...selectedVaultIds]));
+  const endpoint = accountMode ? "/api/workspaces" : "/api/cases";
   const accessCode = element("accessCode").value;
-  const response = await apiRequest("/api/cases", {
+  const response = await apiRequest(endpoint, {
     method: "POST",
-    headers: accessCode ? { "x-access-code": accessCode } : {},
+    headers: accountMode
+      ? { "x-idempotency-key": randomUuid() }
+      : accessCode ? { "x-access-code": accessCode } : {},
     body: form
   });
   const payload = await response.json();
-  caseToken = payload.caseToken;
+  if (accountMode) {
+    activeWorkspace = payload.workspace;
+    activeFeedback = payload.feedback || null;
+    if (!payload.case && payload.job) {
+      await waitForAgentJob(payload.job.id, {
+        build: true,
+        onProgress: job => {
+          const button = element("analyzeCase");
+          button.textContent = `${job.status_message || "Analyse sécurisée"} · ${job.progress || 0} %`;
+        }
+      });
+      const completed = await apiRequest(`/api/workspaces/${activeWorkspace.id}`);
+      const completedPayload = await completed.json();
+      activeWorkspace = completedPayload.workspace;
+      activeFeedback = completedPayload.feedback || null;
+      return completedPayload.case;
+    }
+  } else {
+    caseToken = payload.caseToken;
+  }
   return payload.case;
 }
 
 async function analyzeCase(event) {
   event.preventDefault();
   if (!selectedDao) return setSetupError("Ajoutez le DAO avant de construire le registre.");
-  if (selectedDocuments.length > 30) return setSetupError("Ajoutez au maximum 30 pièces d'entreprise.");
-  const total = [selectedDao, ...selectedDocuments].reduce((sum, file) => sum + file.size, 0);
+  if (selectedDocuments.length + selectedVaultIds.size > 30) return setSetupError("Ajoutez au maximum 30 pièces d'entreprise, coffre inclus.");
+  const selectedVaultBytes = vaultDocuments.filter(document => selectedVaultIds.has(document.id)).reduce((sum, document) => sum + document.size, 0);
+  const total = [selectedDao, ...selectedDocuments].reduce((sum, file) => sum + file.size, 0) + selectedVaultBytes;
   if (total > 50 * 1024 * 1024) return setSetupError("Le dossier dépasse la limite de 50 Mo.");
 
   const button = element("analyzeCase");
@@ -118,6 +184,10 @@ async function analyzeCase(event) {
     renderWorkspace();
     element("caseSetup").classList.add("hidden");
     element("analysisWorkspace").classList.remove("hidden");
+    if (accountMode) {
+      element("accountHomeButton").classList.remove("hidden");
+      refreshAccountSession().catch(() => {});
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (error) {
     setSetupError(error.message);
@@ -194,6 +264,21 @@ function renderAiReview() {
   }).join("") : '<p class="text-sm text-slate-500">Aucun risque supplémentaire conservé après contrôle des citations.</p>';
 }
 
+function renderPilotFeedback() {
+  const visible = accountMode && Boolean(activeWorkspace);
+  element("pilotFeedbackSection").classList.toggle("hidden", !visible);
+  if (!visible) return;
+  const feedback = activeFeedback;
+  element("feedbackOrganization").value = feedback?.organizationName || "";
+  element("feedbackRole").value = feedback?.practitionerRole || "pme";
+  element("feedbackScore").value = String(feedback?.valueScore || 5);
+  element("feedbackWouldPay").value = feedback?.wouldPay || "yes";
+  element("feedbackRepeat").checked = Boolean(feedback?.repeatIntent);
+  element("feedbackMinutes").value = feedback?.minutesToValue || "";
+  element("feedbackBlocker").value = feedback?.blocker || "";
+  element("feedbackMessage").textContent = feedback ? "Retour enregistré. Vous pouvez le modifier." : "";
+}
+
 function messageHtml(message) {
   const isUser = message.role === "user";
   const citations = message.citations?.length
@@ -239,7 +324,38 @@ function renderWorkspace() {
     : "";
   renderLedger();
   renderAiReview();
+  renderPilotFeedback();
   renderMessages();
+}
+
+async function submitPilotFeedback(event) {
+  event.preventDefault();
+  if (!accountMode || !activeWorkspace) return;
+  const button = element("feedbackSubmit");
+  button.disabled = true;
+  element("feedbackMessage").textContent = "Enregistrement…";
+  try {
+    const minutes = element("feedbackMinutes").value;
+    const response = await apiRequest(`/api/workspaces/${activeWorkspace.id}/feedback`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        organizationName: element("feedbackOrganization").value,
+        practitionerRole: element("feedbackRole").value,
+        valueScore: Number(element("feedbackScore").value),
+        wouldPay: element("feedbackWouldPay").value,
+        repeatIntent: element("feedbackRepeat").checked,
+        minutesToValue: minutes ? Number(minutes) : null,
+        blocker: element("feedbackBlocker").value
+      })
+    });
+    activeFeedback = (await response.json()).feedback;
+    element("feedbackMessage").textContent = "Merci — retour enregistré.";
+  } catch (error) {
+    element("feedbackMessage").textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
 }
 
 async function sendQuestion(question) {
@@ -251,7 +367,17 @@ async function sendQuestion(question) {
   renderMessages();
   element("sendMessage").disabled = true;
   try {
-    if (apiBaseUrl) {
+    if (accountMode) {
+      activeCase.messages.pop();
+      const response = await apiRequest(`/api/workspaces/${activeWorkspace.id}/messages`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-idempotency-key": randomUuid() },
+        body: JSON.stringify({ message: value })
+      });
+      const queued = await response.json();
+      await waitForAgentJob(queued.job.id);
+      await loadWorkspace(activeWorkspace.id, { keepPosition: true });
+    } else if (apiBaseUrl) {
       activeCase.messages.pop();
       const response = await apiRequest(`/api/cases/${activeCase.id}/messages`, {
         method: "POST",
@@ -268,6 +394,23 @@ async function sendQuestion(question) {
     element("sendMessage").disabled = false;
     renderMessages();
   }
+}
+
+async function waitForAgentJob(jobId, { build = false, onProgress = () => {} } = {}) {
+  const maxAttempts = build ? 3600 : 180;
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const response = await apiRequest(`/api/jobs/${jobId}`);
+    const { job } = await response.json();
+    onProgress(job);
+    if (job.status === "succeeded") return job;
+    if (["failed", "cancelled"].includes(job.status)) {
+      throw new Error(build
+        ? "L'analyse n'a pas abouti. Le crédit dossier a été automatiquement restitué; vous pouvez réessayer."
+        : "Le copilote n'a pas terminé cette demande. Votre quota n'a pas été débité.");
+    }
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+  throw new Error("Le traitement continue en arrière-plan. Revenez dans quelques instants.");
 }
 
 function downloadBlob(blob, filename) {
@@ -309,7 +452,10 @@ async function downloadFinalPackage() {
   button.textContent = "Préparation…";
   try {
     if (!apiBaseUrl) return await downloadLocalPackage();
-    const response = await apiRequest(`/api/cases/${activeCase.id}/final-ledger.zip`);
+    const path = accountMode
+      ? `/api/workspaces/${activeWorkspace.id}/final-ledger.zip`
+      : `/api/cases/${activeCase.id}/final-ledger.zip`;
+    const response = await apiRequest(path);
     downloadBlob(await response.blob(), `soumission-${slugify(activeCase.title)}.zip`);
   } catch (error) {
     window.alert(error.message);
@@ -321,13 +467,17 @@ async function downloadFinalPackage() {
 
 async function resetCase(removeRemote) {
   if (removeRemote && apiBaseUrl && activeCase) {
-    try { await apiRequest(`/api/cases/${activeCase.id}`, { method: "DELETE" }); }
+    const path = accountMode ? `/api/workspaces/${activeWorkspace.id}` : `/api/cases/${activeCase.id}`;
+    try { await apiRequest(path, { method: "DELETE" }); }
     catch (error) { window.alert(`Suppression distante impossible : ${error.message}`); return; }
   }
   selectedDao = null;
   selectedDocuments = [];
+  selectedVaultIds.clear();
   extractedDocuments = [];
   activeCase = null;
+  activeWorkspace = null;
+  activeFeedback = null;
   caseToken = null;
   element("daoFile").value = "";
   element("companyFiles").value = "";
@@ -340,6 +490,7 @@ async function resetCase(removeRemote) {
 }
 
 async function loadDemo() {
+  selectedVaultIds.clear();
   const daoText = [
     "APPEL D'OFFRES — Maintenance informatique des centres municipaux.",
     "Les offres devront être soumises au plus tard le 30 juillet 2026 à 10h00 sous pli fermé au secrétariat.",
@@ -364,25 +515,313 @@ async function loadDemo() {
   element("caseForm").requestSubmit();
 }
 
-function initialize() {
+function setAccountError(message) {
+  element("accountError").textContent = message;
+  element("accountError").classList.toggle("hidden", !message);
+}
+
+function showAuthForm(kind) {
+  const login = kind === "login";
+  element("loginForm").classList.toggle("hidden", !login);
+  element("registerForm").classList.toggle("hidden", login);
+  element("showLogin").className = `flex-1 rounded-lg px-4 py-2.5 ${login ? "bg-white shadow-sm" : "text-slate-500"}`;
+  element("showRegister").className = `flex-1 rounded-lg px-4 py-2.5 ${login ? "text-slate-500" : "bg-white shadow-sm"}`;
+  setAccountError("");
+}
+
+function showOnly(sectionId) {
+  for (const id of ["accountGate", "accountDashboard", "caseSetup", "analysisWorkspace"]) {
+    element(id).classList.toggle("hidden", id !== sectionId);
+  }
+}
+
+function formatDate(value) {
+  return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
+}
+
+function planUsageText(plan) {
+  if (plan.code === "dossier") return `1 dossier · ${plan.agentTurnLimit} échanges · ${plan.retentionDays} jours`;
+  return `${plan.workspaceLimit} dossiers/mois · ${plan.agentTurnLimit} échanges · ${plan.concurrentAgentRuns} traitements simultanés`;
+}
+
+async function refreshAccountSession() {
+  const response = await apiRequest("/api/auth/me");
+  accountSession = await response.json();
+  if (!accountSession.user) {
+    const error = new Error("Connectez-vous pour continuer.");
+    error.status = 401;
+    throw error;
+  }
+  return accountSession;
+}
+
+async function renderAccountDashboard() {
+  await refreshAccountSession();
+  await refreshVault();
+  const response = await apiRequest("/api/workspaces");
+  const { workspaces } = await response.json();
+  element("accountGreeting").textContent = `Bonjour ${accountSession.user.displayName}`;
+  element("workspaceCount").textContent = `${workspaces.length} espace${workspaces.length > 1 ? "s" : ""}`;
+  element("workspaceList").innerHTML = workspaces.length ? workspaces.map(workspace => {
+    const processing = workspace.status === "processing";
+    const readOnly = !processing && (workspace.status !== "active" || Date.parse(workspace.expiresAt) <= Date.now());
+    return `<button type="button" data-workspace-id="${workspace.id}" class="group grid gap-3 rounded-2xl border border-slate-900/8 p-4 text-left transition hover:border-emerald-700/30 hover:bg-emerald-50/40 sm:grid-cols-[1fr_auto] sm:items-center sm:p-5">
+      <span class="min-w-0"><span class="block truncate text-base font-black text-slate-950">${escapeHtml(workspace.title)}</span><span class="mt-1 block text-xs text-slate-500">${escapeHtml(workspace.buyer || "Acheteur non renseigné")} · conservé jusqu'au ${formatDate(workspace.expiresAt)}</span></span>
+      <span class="flex items-center gap-3"><span class="rounded-full ${processing ? "bg-blue-100 text-blue-800" : readOnly ? "bg-slate-100 text-slate-600" : "bg-emerald-100 text-emerald-800"} px-2.5 py-1 text-[10px] font-black uppercase">${processing ? "Analyse en cours" : readOnly ? "Lecture seule" : `${workspace.turnsUsed}/${workspace.turnsLimit} échanges`}</span><span class="text-lg text-emerald-700 transition group-hover:translate-x-1">→</span></span>
+    </button>`;
+  }).join("") : `<div class="rounded-2xl border-2 border-dashed border-slate-900/10 p-8 text-center"><p class="font-black">Aucun dossier enregistré</p><p class="mt-2 text-sm text-slate-500">Utilisez votre crédit disponible pour créer votre premier espace.</p><button type="button" data-new-workspace class="mt-5 rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white">Créer mon premier dossier</button></div>`;
+
+  const usage = accountSession.usage;
+  element("creditSummary").textContent = `${usage.workspaceCredits} crédit${usage.workspaceCredits > 1 ? "s" : ""} dossier`;
+  element("subscriptionSummary").textContent = usage.subscription
+    ? `${usage.subscription.label} : ${usage.subscription.used}/${usage.subscription.limit} dossiers utilisés jusqu'au ${formatDate(usage.subscription.periodEnd)}.`
+    : "Aucun abonnement actif. Un crédit est consommé uniquement lorsqu'un nouvel espace est créé.";
+  element("planButtons").innerHTML = accountSession.plans.map(plan => `<button type="button" data-plan-code="${plan.code}" ${plan.available ? "" : "disabled"} class="w-full rounded-xl border border-slate-900/10 p-3 text-left transition hover:border-emerald-700/30 disabled:cursor-not-allowed disabled:opacity-45"><span class="flex items-center justify-between gap-3"><strong class="text-sm">${escapeHtml(plan.label)}</strong><span class="text-sm font-black">${new Intl.NumberFormat("fr-FR").format(plan.amount)} FCFA${plan.billingMode === "subscription" ? "/mois" : ""}</span></span><span class="mt-1 block text-[11px] leading-4 text-slate-500">${planUsageText(plan)}</span></button>`).join("");
+  element("billingPortalButton").classList.toggle("hidden", !accountSession.billingConfigured);
+  const paymentState = new URLSearchParams(window.location.search).get("paiement");
+  element("billingNote").textContent = paymentState === "confirme"
+    ? "Paiement reçu. Le crédit apparaît dès la confirmation sécurisée de Stripe; rechargez si nécessaire."
+    : accountSession.billingConfigured
+      ? "Le prix et les droits sont vérifiés par le serveur après confirmation du paiement."
+      : "Paiement en ligne non activé sur ce pilote. Votre code d'invitation fournit un crédit d'essai unique.";
+  showOnly("accountDashboard");
+  element("accountHomeButton").classList.remove("hidden");
+}
+
+function renderVault() {
+  const filesUsed = vaultUsage?.filesUsed || 0;
+  element("vaultUsage").textContent = vaultUsage ? `${filesUsed}/${vaultUsage.fileLimit} pièces · ${formatBytes(vaultUsage.bytesUsed)}` : "";
+  element("vaultList").innerHTML = vaultDocuments.length ? vaultDocuments.map(document => {
+    const expiry = document.expiresOn ? `Expire le ${formatDate(document.expiresOn)}` : "Sans échéance renseignée";
+    return `<article class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-900/8 px-3 py-3"><span class="min-w-0"><strong class="block truncate text-sm text-slate-900">${escapeHtml(document.name)}</strong><span class="mt-1 block text-[11px] ${document.expired ? "font-bold text-rose-700" : "text-slate-500"}">${escapeHtml(VAULT_CATEGORY_LABELS[document.category] || "Autre")} · ${escapeHtml(expiry)} · ${formatBytes(document.size)}</span></span><button type="button" data-delete-vault-id="${document.id}" class="rounded-lg border border-slate-900/10 px-2.5 py-1.5 text-[11px] font-bold text-slate-600">Supprimer</button></article>`;
+  }).join("") : '<p class="rounded-xl border border-dashed border-slate-900/10 p-4 text-center text-xs text-slate-500">Le coffre est vide. Ajoutez une preuve que vous réutilisez souvent.</p>';
+  for (const id of [...selectedVaultIds]) if (!vaultDocuments.some(document => document.id === id)) selectedVaultIds.delete(id);
+  element("vaultPicker").classList.toggle("hidden", !accountMode || vaultDocuments.length === 0);
+  element("vaultPickerCount").textContent = `${selectedVaultIds.size} sélectionnée${selectedVaultIds.size > 1 ? "s" : ""}`;
+  element("vaultPickerList").innerHTML = vaultDocuments.map(document => `<label class="flex cursor-pointer items-start gap-2 rounded-xl border ${selectedVaultIds.has(document.id) ? "border-blue-300/60 bg-blue-300/10" : "border-white/10"} p-3 text-xs"><input type="checkbox" data-vault-id="${document.id}" ${selectedVaultIds.has(document.id) ? "checked" : ""} ${document.expired ? "disabled" : ""} class="mt-0.5 accent-blue-300" /><span class="min-w-0"><strong class="block truncate text-white">${escapeHtml(document.name)}</strong><span class="mt-1 block ${document.expired ? "text-rose-300" : "text-slate-500"}">${escapeHtml(VAULT_CATEGORY_LABELS[document.category] || "Autre")}${document.expired ? " · expirée" : ""}</span></span></label>`).join("");
+  updateFileLabels();
+}
+
+async function refreshVault() {
+  if (!accountMode) return;
+  const response = await apiRequest("/api/vault");
+  const payload = await response.json();
+  vaultDocuments = payload.documents;
+  vaultUsage = payload.usage;
+  renderVault();
+}
+
+async function uploadVaultDocument(event) {
+  event.preventDefault();
+  const file = element("vaultFile").files[0];
+  if (!file) return;
+  const button = element("vaultUploadButton");
+  button.disabled = true;
+  button.textContent = "Enregistrement…";
+  try {
+    const form = new FormData();
+    form.append("document", file, file.name);
+    form.append("category", element("vaultCategory").value);
+    if (element("vaultExpiresOn").value) form.append("expiresOn", element("vaultExpiresOn").value);
+    await apiRequest("/api/vault", { method: "POST", body: form });
+    element("vaultFile").value = "";
+    element("vaultExpiresOn").value = "";
+    await refreshVault();
+  } catch (error) {
+    window.alert(error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = "Enregistrer";
+  }
+}
+
+async function deleteVaultDocument(id) {
+  if (!window.confirm("Supprimer cette preuve du coffre ? Les dossiers déjà créés conservent leur copie.")) return;
+  await apiRequest(`/api/vault/${id}`, { method: "DELETE" });
+  selectedVaultIds.delete(id);
+  await refreshVault();
+}
+
+async function loadWorkspace(workspaceId, { keepPosition = false } = {}) {
+  let response = await apiRequest(`/api/workspaces/${workspaceId}`);
+  let payload = await response.json();
+  if (!payload.case && payload.job && payload.workspace.status === "processing") {
+    element("billingNote").textContent = `${payload.job.status_message || "Analyse sécurisée en cours"} · ${payload.job.progress || 0} %. Vous pouvez laisser cette page ouverte.`;
+    showOnly("accountDashboard");
+    await waitForAgentJob(payload.job.id, {
+      build: true,
+      onProgress: job => { element("billingNote").textContent = `${job.status_message || "Analyse sécurisée en cours"} · ${job.progress || 0} %`; }
+    });
+    response = await apiRequest(`/api/workspaces/${workspaceId}`);
+    payload = await response.json();
+  }
+  activeWorkspace = payload.workspace;
+  activeCase = payload.case;
+  activeFeedback = payload.feedback || null;
+  renderWorkspace();
+  showOnly("analysisWorkspace");
+  if (!keepPosition) window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function openNewWorkspace() {
+  await resetCase(false);
+  await refreshVault();
+  showOnly("caseSetup");
+  element("accessCodeField").classList.add("hidden");
+  element("privacyNote").textContent = "Espace privé : ce DAO sera lié à votre compte et à un seul crédit. Vous pourrez le reprendre plus tard.";
+}
+
+async function submitLogin(event) {
+  event.preventDefault();
+  setAccountError("");
+  try {
+    await apiRequest("/api/auth/login", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: element("loginEmail").value, password: element("loginPassword").value })
+    });
+    element("loginPassword").value = "";
+    await renderAccountDashboard();
+  } catch (error) {
+    setAccountError(error.message);
+  }
+}
+
+async function submitRegister(event) {
+  event.preventDefault();
+  setAccountError("");
+  try {
+    await apiRequest("/api/auth/register", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        displayName: element("registerName").value,
+        email: element("registerEmail").value,
+        password: element("registerPassword").value,
+        invitationCode: element("registerInvitation").value
+      })
+    });
+    element("registerPassword").value = "";
+    element("registerInvitation").value = "";
+    await renderAccountDashboard();
+  } catch (error) {
+    setAccountError(error.message);
+  }
+}
+
+async function logoutAccount() {
+  try { await apiRequest("/api/auth/logout", { method: "POST" }); } catch { /* clear the local view anyway */ }
+  accountSession = null;
+  activeWorkspace = null;
+  activeCase = null;
+  element("accountHomeButton").classList.add("hidden");
+  showAuthForm("login");
+  showOnly("accountGate");
+}
+
+async function startCheckout(planCode) {
+  try {
+    const response = await apiRequest("/api/billing/checkout", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ planCode })
+    });
+    window.location.assign((await response.json()).url);
+  } catch (error) {
+    window.alert(error.message);
+  }
+}
+
+async function openBillingPortal() {
+  try {
+    const response = await apiRequest("/api/billing/portal", { method: "POST" });
+    window.location.assign((await response.json()).url);
+  } catch (error) {
+    window.alert(error.message);
+  }
+}
+
+async function initializeAccountMode() {
+  try {
+    const response = await apiRequest("/api/account/config");
+    accountConfig = await response.json();
+  } catch (error) {
+    if (error.status === 404) return false;
+    throw error;
+  }
+  accountMode = Boolean(accountConfig.enabled);
+  if (!accountMode) return false;
+  element("modeBadge").textContent = "Compte privé · dossiers enregistrés";
+  element("invitationCodeField").classList.toggle("hidden", accountConfig.registration !== "invitation");
+  if (accountConfig.registration === "closed") element("showRegister").disabled = true;
+  showOnly("accountGate");
+  try {
+    await renderAccountDashboard();
+  } catch (error) {
+    if (error.status !== 401) setAccountError(error.message);
+    showOnly("accountGate");
+  }
+  return true;
+}
+
+async function initialize() {
   if (!analyzer || !ledgerBuilder || !window.JSZip) {
     setSetupError("Les modules de l'atelier n'ont pas pu être chargés.");
     return;
   }
   if (apiBaseUrl) {
-    element("modeBadge").textContent = "Serveur privé · suppression 24 h";
-    element("accessCodeField").classList.remove("hidden");
-    element("privacyNote").textContent = "Mode serveur privé : fichiers isolés par dossier et supprimés automatiquement après 24 h. Utilisez une adresse HTTPS hors réseau local.";
+    const accountsReady = await initializeAccountMode().catch(error => {
+      setSetupError(`Le service de comptes n'a pas démarré : ${error.message}`);
+      return false;
+    });
+    if (!accountsReady) {
+      element("modeBadge").textContent = "Serveur privé · suppression 24 h";
+      element("accessCodeField").classList.remove("hidden");
+      element("privacyNote").textContent = "Mode serveur privé : fichiers isolés par dossier et supprimés automatiquement après 24 h. Utilisez une adresse HTTPS hors réseau local.";
+    }
   }
   element("daoFile").addEventListener("change", event => { selectedDao = event.target.files[0] || null; updateFileLabels(); });
   element("companyFiles").addEventListener("change", event => { selectedDocuments = [...event.target.files]; updateFileLabels(); });
+  element("vaultPickerList").addEventListener("change", event => {
+    const id = event.target.closest("[data-vault-id]")?.dataset.vaultId;
+    if (!id) return;
+    if (event.target.checked) selectedVaultIds.add(id); else selectedVaultIds.delete(id);
+    renderVault();
+  });
   element("caseForm").addEventListener("submit", analyzeCase);
   element("demoButton").addEventListener("click", loadDemo);
   element("chatForm").addEventListener("submit", event => { event.preventDefault(); sendQuestion(element("chatInput").value); });
   element("quickQuestions").addEventListener("click", event => { const question = event.target.closest("[data-question]")?.dataset.question; if (question) sendQuestion(question); });
   element("downloadFinal").addEventListener("click", downloadFinalPackage);
-  element("deleteCaseButton").addEventListener("click", () => resetCase(true));
-  element("newCaseButton").addEventListener("click", () => resetCase(true));
+  element("deleteCaseButton").addEventListener("click", async () => {
+    if (!window.confirm(accountMode ? "Supprimer définitivement cet espace et ses fichiers ? Le crédit ne sera pas recrédité." : "Supprimer ce dossier ?")) return;
+    await resetCase(true);
+    if (accountMode) await renderAccountDashboard();
+  });
+  element("newCaseButton").addEventListener("click", () => accountMode ? openNewWorkspace() : resetCase(false));
+  element("showLogin").addEventListener("click", () => showAuthForm("login"));
+  element("showRegister").addEventListener("click", () => showAuthForm("register"));
+  element("loginForm").addEventListener("submit", submitLogin);
+  element("registerForm").addEventListener("submit", submitRegister);
+  element("logoutButton").addEventListener("click", logoutAccount);
+  element("newWorkspaceButton").addEventListener("click", openNewWorkspace);
+  element("vaultForm").addEventListener("submit", uploadVaultDocument);
+  element("vaultList").addEventListener("click", event => {
+    const id = event.target.closest("[data-delete-vault-id]")?.dataset.deleteVaultId;
+    if (id) deleteVaultDocument(id).catch(error => window.alert(error.message));
+  });
+  element("accountHomeButton").addEventListener("click", () => renderAccountDashboard().catch(error => window.alert(error.message)));
+  element("workspaceList").addEventListener("click", event => {
+    const workspaceId = event.target.closest("[data-workspace-id]")?.dataset.workspaceId;
+    if (workspaceId) loadWorkspace(workspaceId).catch(error => window.alert(error.message));
+    if (event.target.closest("[data-new-workspace]")) openNewWorkspace();
+  });
+  element("planButtons").addEventListener("click", event => {
+    const planCode = event.target.closest("[data-plan-code]")?.dataset.planCode;
+    if (planCode) startCheckout(planCode);
+  });
+  element("billingPortalButton").addEventListener("click", openBillingPortal);
+  element("pilotFeedbackForm").addEventListener("submit", submitPilotFeedback);
   updateFileLabels();
 }
 

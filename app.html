@@ -18,12 +18,90 @@
         </a>
         <div class="flex items-center gap-2 text-xs font-semibold">
           <span id="modeBadge" class="rounded-full border border-emerald-700/15 bg-emerald-700/10 px-3 py-1.5 text-emerald-800">Local · fichiers privés</span>
+          <button id="accountHomeButton" type="button" class="hidden rounded-full px-3 py-1.5 text-slate-600 hover:bg-white">Mes dossiers</button>
           <a href="./confidentialite.html" class="hidden rounded-full px-3 py-1.5 text-slate-500 hover:bg-white sm:block">Confidentialité</a>
         </div>
       </nav>
     </header>
 
     <main class="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:py-9">
+      <section id="accountGate" class="mx-auto hidden max-w-6xl">
+        <div class="grid overflow-hidden rounded-[2rem] bg-white shadow-2xl shadow-slate-900/10 ring-1 ring-slate-900/5 lg:grid-cols-[.9fr_1.1fr]">
+          <div class="bg-slate-950 p-7 text-white sm:p-10 lg:p-12">
+            <span class="inline-flex rounded-full bg-lime-300 px-3 py-1 text-[10px] font-black uppercase tracking-[.16em] text-slate-950">Atelier privé</span>
+            <h1 class="mt-7 text-4xl font-black leading-[.98] tracking-[-.05em] sm:text-6xl">Un espace durable pour chaque soumission.</h1>
+            <p class="mt-6 max-w-lg text-base leading-7 text-slate-300">Reprenez vos dossiers au même endroit, gardez le registre et l'historique du copilote, puis exportez une version finale quand vous êtes prêt.</p>
+            <div class="mt-9 grid gap-3 text-sm sm:grid-cols-3 lg:grid-cols-1">
+              <p class="rounded-2xl bg-white/5 p-4"><strong class="block text-lime-300">1 DAO = 1 espace</strong><span class="mt-1 block text-slate-400">Aucun double débit sur le même traitement.</span></p>
+              <p class="rounded-2xl bg-white/5 p-4"><strong class="block text-lime-300">Fichiers cloisonnés</strong><span class="mt-1 block text-slate-400">Chaque compte ne voit que ses propres dossiers.</span></p>
+              <p class="rounded-2xl bg-white/5 p-4"><strong class="block text-lime-300">Usage mesuré</strong><span class="mt-1 block text-slate-400">Crédits et conversations contrôlés côté serveur.</span></p>
+            </div>
+          </div>
+          <div class="p-6 sm:p-10 lg:p-12">
+            <div class="flex rounded-xl bg-slate-100 p-1 text-sm font-bold">
+              <button id="showLogin" type="button" class="flex-1 rounded-lg bg-white px-4 py-2.5 shadow-sm">Se connecter</button>
+              <button id="showRegister" type="button" class="flex-1 rounded-lg px-4 py-2.5 text-slate-500">Créer un compte</button>
+            </div>
+            <form id="loginForm" class="mt-8 space-y-5">
+              <div><p class="text-xs font-black uppercase tracking-[.18em] text-emerald-700">Bon retour</p><h2 class="mt-2 text-3xl font-black tracking-tight">Reprendre mes dossiers</h2></div>
+              <label class="block text-sm font-bold">Adresse e-mail
+                <input id="loginEmail" type="email" autocomplete="email" required class="mt-2 w-full rounded-xl border border-slate-900/10 px-4 py-3 outline-none focus:border-emerald-600" placeholder="vous@entreprise.sn" />
+              </label>
+              <label class="block text-sm font-bold">Mot de passe
+                <input id="loginPassword" type="password" autocomplete="current-password" required class="mt-2 w-full rounded-xl border border-slate-900/10 px-4 py-3 outline-none focus:border-emerald-600" />
+              </label>
+              <button type="submit" class="w-full rounded-xl bg-slate-950 px-5 py-3.5 font-black text-white hover:bg-emerald-800">Ouvrir mon atelier →</button>
+            </form>
+            <form id="registerForm" class="mt-8 hidden space-y-5">
+              <div><p class="text-xs font-black uppercase tracking-[.18em] text-emerald-700">Nouvel atelier</p><h2 class="mt-2 text-3xl font-black tracking-tight">Créer mon compte</h2></div>
+              <label class="block text-sm font-bold">Votre nom
+                <input id="registerName" autocomplete="name" required minlength="2" maxlength="100" class="mt-2 w-full rounded-xl border border-slate-900/10 px-4 py-3 outline-none focus:border-emerald-600" placeholder="Awa Diop" />
+              </label>
+              <label class="block text-sm font-bold">Adresse e-mail professionnelle
+                <input id="registerEmail" type="email" autocomplete="email" required class="mt-2 w-full rounded-xl border border-slate-900/10 px-4 py-3 outline-none focus:border-emerald-600" placeholder="awa@entreprise.sn" />
+              </label>
+              <label class="block text-sm font-bold">Mot de passe
+                <input id="registerPassword" type="password" autocomplete="new-password" required minlength="12" class="mt-2 w-full rounded-xl border border-slate-900/10 px-4 py-3 outline-none focus:border-emerald-600" />
+                <span class="mt-1 block text-xs font-normal text-slate-400">12 caractères minimum. N'utilisez pas un mot de passe déjà employé ailleurs.</span>
+              </label>
+              <label id="invitationCodeField" class="hidden text-sm font-bold">Code d'invitation pilote
+                <input id="registerInvitation" type="password" autocomplete="off" class="mt-2 w-full rounded-xl border border-slate-900/10 px-4 py-3 outline-none focus:border-emerald-600" />
+              </label>
+              <button type="submit" class="w-full rounded-xl bg-slate-950 px-5 py-3.5 font-black text-white hover:bg-emerald-800">Créer mon atelier →</button>
+            </form>
+            <div id="accountError" class="mt-5 hidden rounded-xl bg-rose-50 p-3 text-sm text-rose-800" role="alert"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="accountDashboard" class="mx-auto hidden max-w-7xl">
+        <div class="flex flex-col gap-5 rounded-[2rem] bg-slate-950 p-6 text-white sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <div><p class="text-xs font-black uppercase tracking-[.2em] text-lime-300">Votre atelier</p><h1 id="accountGreeting" class="mt-2 text-3xl font-black tracking-tight"></h1><p class="mt-2 text-sm text-slate-400">Vos espaces restent disponibles jusqu'à leur date de conservation.</p></div>
+          <div class="flex flex-wrap gap-2"><button id="newWorkspaceButton" type="button" class="rounded-xl bg-lime-300 px-5 py-3 text-sm font-black text-slate-950 hover:bg-lime-200">+ Nouveau dossier</button><button id="logoutButton" type="button" class="rounded-xl border border-white/15 px-4 py-3 text-sm font-bold hover:bg-white/10">Se déconnecter</button></div>
+        </div>
+
+        <div class="mt-6 grid gap-6 xl:grid-cols-[1fr_22rem]">
+          <section class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-900/5 sm:p-7">
+            <div class="flex flex-wrap items-end justify-between gap-3"><div><p class="text-xs font-black uppercase tracking-[.2em] text-emerald-700">Espaces enregistrés</p><h2 class="mt-2 text-2xl font-black">Mes dossiers de soumission</h2></div><p id="workspaceCount" class="text-xs font-semibold text-slate-400"></p></div>
+            <div id="workspaceList" class="mt-6 grid gap-3"></div>
+            <div class="mt-8 border-t border-slate-900/8 pt-7">
+              <div class="flex flex-wrap items-end justify-between gap-3"><div><p class="text-xs font-black uppercase tracking-[.18em] text-blue-700">Coffre entreprise</p><h3 class="mt-2 text-xl font-black">Vos preuves réutilisables</h3><p class="mt-1 text-xs leading-5 text-slate-500">NINEA, quitus, attestations, références et CV restent privés et peuvent être repris dans un autre dossier.</p></div><p id="vaultUsage" class="text-xs font-semibold text-slate-400"></p></div>
+              <form id="vaultForm" class="mt-5 grid gap-3 rounded-2xl bg-slate-50 p-4 sm:grid-cols-[1fr_11rem_10rem_auto] sm:items-end">
+                <label class="text-xs font-bold text-slate-700">Pièce<input id="vaultFile" required type="file" accept=".pdf,.docx,.txt,.md,.csv,.json,.xml,.png,.jpg,.jpeg,.webp" class="mt-1.5 block w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-slate-950 file:px-3 file:py-2 file:font-bold file:text-white" /></label>
+                <label class="text-xs font-bold text-slate-700">Catégorie<select id="vaultCategory" class="mt-1.5 w-full rounded-lg border border-slate-900/10 bg-white px-3 py-2.5 text-xs"><option value="legal">Juridique</option><option value="tax_social">Fiscal & social</option><option value="bank">Banque</option><option value="references">Références</option><option value="staff">Personnel</option><option value="technical">Technique</option><option value="financial">Financier</option><option value="other">Autre</option></select></label>
+                <label class="text-xs font-bold text-slate-700">Expire le<input id="vaultExpiresOn" type="date" class="mt-1.5 w-full rounded-lg border border-slate-900/10 bg-white px-3 py-2 text-xs" /></label>
+                <button id="vaultUploadButton" type="submit" class="rounded-lg bg-blue-700 px-4 py-2.5 text-xs font-black text-white">Enregistrer</button>
+              </form>
+              <div id="vaultList" class="mt-4 grid gap-2"></div>
+            </div>
+          </section>
+          <aside class="space-y-4">
+            <section class="rounded-3xl bg-emerald-800 p-6 text-white"><p class="text-xs font-black uppercase tracking-[.18em] text-lime-300">Capacité disponible</p><p id="creditSummary" class="mt-3 text-3xl font-black"></p><p id="subscriptionSummary" class="mt-2 text-sm leading-6 text-emerald-100/70"></p></section>
+            <section class="rounded-3xl bg-white p-6 ring-1 ring-slate-900/5"><p class="text-xs font-black uppercase tracking-[.18em] text-blue-700">Ajouter de la capacité</p><div id="planButtons" class="mt-4 space-y-3"></div><button id="billingPortalButton" type="button" class="mt-4 hidden w-full rounded-xl border border-slate-900/10 px-4 py-2.5 text-sm font-bold">Gérer mon abonnement</button><p id="billingNote" class="mt-3 text-xs leading-5 text-slate-400"></p></section>
+          </aside>
+        </div>
+      </section>
+
       <section id="caseSetup" class="mx-auto max-w-6xl">
         <div class="grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
           <div class="lg:sticky lg:top-8">
@@ -72,6 +150,11 @@
               </label>
             </div>
 
+            <section id="vaultPicker" class="mt-4 hidden rounded-2xl border border-blue-300/20 bg-blue-300/[.06] p-4">
+              <div class="flex flex-wrap items-center justify-between gap-2"><div><p class="text-xs font-black uppercase tracking-[.14em] text-blue-300">Depuis le coffre entreprise</p><p class="mt-1 text-xs text-slate-400">Cochez les preuves à copier dans ce dossier. Elles ne consomment pas de crédit supplémentaire.</p></div><span id="vaultPickerCount" class="text-xs font-bold text-blue-200"></span></div>
+              <div id="vaultPickerList" class="mt-3 grid gap-2 sm:grid-cols-2"></div>
+            </section>
+
             <div id="setupError" class="mt-5 hidden rounded-xl border border-rose-300/20 bg-rose-300/10 p-3 text-sm text-rose-100" role="alert"></div>
             <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p id="privacyNote" class="max-w-sm text-xs leading-5 text-slate-500">Mode local : les fichiers restent dans ce navigateur et disparaissent à la fermeture.</p>
@@ -118,6 +201,22 @@
               <p class="text-xs font-black uppercase tracking-[.2em] text-blue-700">Seconde lecture du modèle</p>
               <p id="aiReviewSummary" class="mt-3 text-sm leading-6 text-slate-700"></p>
               <div id="aiReviewRisks" class="mt-5 space-y-3"></div>
+            </section>
+
+            <section id="pilotFeedbackSection" class="hidden rounded-3xl bg-[#fff7d6] p-5 ring-1 ring-amber-900/10 sm:p-7">
+              <p class="text-xs font-black uppercase tracking-[.2em] text-amber-800">Retour pilote · 60 secondes</p>
+              <h2 class="mt-2 text-2xl font-black tracking-tight">Ce dossier vous a-t-il réellement aidé ?</h2>
+              <p class="mt-2 text-sm leading-6 text-slate-600">Votre réponse décide si nous améliorons, changeons le prix ou arrêtons. Aucun témoignage ne sera publié sans accord séparé.</p>
+              <form id="pilotFeedbackForm" class="mt-5 grid gap-4 sm:grid-cols-2">
+                <label class="text-xs font-bold text-slate-700">Votre rôle<select id="feedbackRole" required class="mt-1.5 w-full rounded-xl border border-slate-900/10 bg-white px-3 py-3 text-sm"><option value="pme">Équipe PME</option><option value="consultant">Consultant marchés</option><option value="juriste">Juridique</option><option value="finance">Finance / administratif</option><option value="direction">Direction</option><option value="other">Autre</option></select></label>
+                <label class="text-xs font-bold text-slate-700">Organisation <span class="font-normal text-slate-400">(facultatif)</span><input id="feedbackOrganization" maxlength="120" class="mt-1.5 w-full rounded-xl border border-slate-900/10 bg-white px-3 py-3 text-sm" placeholder="Nom de l'entreprise" /></label>
+                <label class="text-xs font-bold text-slate-700">Valeur obtenue<select id="feedbackScore" required class="mt-1.5 w-full rounded-xl border border-slate-900/10 bg-white px-3 py-3 text-sm"><option value="5">5 — indispensable</option><option value="4">4 — utile</option><option value="3">3 — moyen</option><option value="2">2 — peu utile</option><option value="1">1 — inutile</option></select></label>
+                <label class="text-xs font-bold text-slate-700">Paieriez-vous 35 000 FCFA pour cet espace ?<select id="feedbackWouldPay" required class="mt-1.5 w-full rounded-xl border border-slate-900/10 bg-white px-3 py-3 text-sm"><option value="yes">Oui</option><option value="maybe">Peut-être</option><option value="no">Non</option></select></label>
+                <label class="text-xs font-bold text-slate-700">Minutes avant le premier résultat utile <span class="font-normal text-slate-400">(facultatif)</span><input id="feedbackMinutes" type="number" min="1" max="1440" class="mt-1.5 w-full rounded-xl border border-slate-900/10 bg-white px-3 py-3 text-sm" placeholder="Ex. 8" /></label>
+                <label class="flex items-center gap-3 rounded-xl border border-slate-900/10 bg-white px-3 py-3 text-sm font-bold"><input id="feedbackRepeat" type="checkbox" class="size-4 accent-emerald-700" />Je l'utiliserais sur un autre DAO</label>
+                <label class="text-xs font-bold text-slate-700 sm:col-span-2">Le principal défaut ou blocage <span class="font-normal text-slate-400">(facultatif)</span><textarea id="feedbackBlocker" maxlength="1000" rows="3" class="mt-1.5 w-full resize-y rounded-xl border border-slate-900/10 bg-white px-3 py-3 text-sm" placeholder="Ce qui vous ferait abandonner ou demander un remboursement…"></textarea></label>
+                <div class="flex flex-wrap items-center gap-3 sm:col-span-2"><button id="feedbackSubmit" type="submit" class="rounded-xl bg-slate-950 px-5 py-3 text-sm font-black text-white">Enregistrer mon retour</button><p id="feedbackMessage" class="text-xs font-bold text-emerald-800" aria-live="polite"></p></div>
+              </form>
             </section>
           </div>
 
